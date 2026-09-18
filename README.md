@@ -1,3 +1,5 @@
+[![Playwright Tests](https://github.com/miteshahir0505/saucedemo-playwright-framework/actions/workflows/playwright.yml/badge.svg)](https://github.com/miteshahir0505/saucedemo-playwright-framework/actions/workflows/playwright.yml)
+
 # SauceDemo Test Automation Framework
 
 An end-to-end test automation framework built with **Playwright** and **JavaScript**, covering the full user journey on [saucedemo.com](https://www.saucedemo.com) — login, product browsing, cart management, and checkout — using the **Page Object Model (POM)** design pattern.
