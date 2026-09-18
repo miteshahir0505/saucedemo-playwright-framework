@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
+import { users, checkoutInfo } from '../fixtures/users';
 
 test.describe('Login - credential validation', () => {
 
   test('should log in successfully with valid credentials', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.login('standard_user', 'secret_sauce');
+    await loginPage.login(users.standard.username, users.standard.password);
 
     await expect(page.getByText('Products')).toBeVisible();
   });
@@ -14,7 +15,7 @@ test.describe('Login - credential validation', () => {
   test('should show error when password is incorrect', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.login('standard_user', 'wrong_password');
+    await loginPage.login(users.standard.username, users.invalid.password);
 
     await expect(loginPage.errorMessage).toBeVisible();
   });

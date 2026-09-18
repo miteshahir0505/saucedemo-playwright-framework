@@ -3,6 +3,7 @@ import { LoginPage } from '../pages/LoginPage';
 import { InventoryPage } from '../pages/InventoryPage';
 import { CartPage } from '../pages/CartPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
+import { users, checkoutInfo } from '../fixtures/users';
 
 test.describe('Checkout - core flow', () => {
 
@@ -13,7 +14,7 @@ test.describe('Checkout - core flow', () => {
     const checkoutPage = new CheckoutPage(page);
 
     await loginPage.goto();
-    await loginPage.login('standard_user', 'secret_sauce');
+    await loginPage.login(users.standard.username, users.standard.password);
 
     await inventoryPage.addProductToCart('sauce-labs-backpack');
     await inventoryPage.goToCart();
@@ -21,7 +22,7 @@ test.describe('Checkout - core flow', () => {
     await cartPage.goToCheckout();
     await expect(page).toHaveURL(/checkout-step-one/);
 
-    await checkoutPage.fillInformation('Alex', 'Simmons', '34355');
+    await checkoutPage.fillInformation(checkoutInfo.valid.firstName, checkoutInfo.valid.lastName, checkoutInfo.valid.postalCode);
     await checkoutPage.continueToOverview();
 
     await expect(page).toHaveURL(/checkout-step-two/);
