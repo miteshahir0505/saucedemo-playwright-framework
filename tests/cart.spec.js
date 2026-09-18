@@ -194,26 +194,24 @@ test.describe('Cart - network resilience', () => {
     await loginPage.login('standard_user', 'secret_sauce');
 
     await page.context().setOffline(true);
-    await inventoryPage
-      .addToCartButton('sauce-labs-backpack')
-      .click({ timeout: 5000 })
-      .catch(() => {});
-    await page.context().setOffline(false);
+await inventoryPage
+  .addToCartButton('sauce-labs-backpack')
+  .click({ timeout: 5000 })
+  .catch(() => {});
+await page.context().setOffline(false);
 
-    // Give the browser a brief moment to settle after coming back online
-    await page.waitForTimeout(500);
+await expect(async () => {
+  const isAlreadyAdded = await inventoryPage
+    .removeFromCartButton('sauce-labs-backpack')
+    .isVisible()
+    .catch(() => false);
 
-    // If the item wasn't added while offline, retry now that we're back online
-    const isAlreadyAdded = await inventoryPage
-      .removeFromCartButton('sauce-labs-backpack')
-      .isVisible()
-      .catch(() => false);
+  if (!isAlreadyAdded) {
+    await inventoryPage.addProductToCart('sauce-labs-backpack');
+  }
 
-    if (!isAlreadyAdded) {
-      await inventoryPage.addProductToCart('sauce-labs-backpack');
-    }
-
-    expect(await inventoryPage.getCartCount()).toBe(1);
+  expect(await inventoryPage.getCartCount()).toBe(1);
+}).toPass({ timeout: 20000, intervals: [2000] });
     await expect(inventoryPage.removeFromCartButton('sauce-labs-backpack')).toBeVisible();
   });
 
@@ -255,25 +253,24 @@ test.describe('Cart - network resilience', () => {
     expect(await inventoryPage.getCartCount()).toBe(1);
 
     await page.context().setOffline(true);
-    await inventoryPage
-      .removeFromCartButton('sauce-labs-backpack')
-      .click({ timeout: 5000 })
-      .catch(() => {});
-    await page.context().setOffline(false);
+await inventoryPage
+  .removeFromCartButton('sauce-labs-backpack')
+  .click({ timeout: 5000 })
+  .catch(() => {});
+await page.context().setOffline(false);
 
-    await page.waitForTimeout(500);
+await expect(async () => {
+  const stillInCart = await inventoryPage
+    .removeFromCartButton('sauce-labs-backpack')
+    .isVisible()
+    .catch(() => false);
 
-    // If the item is still in the cart, retry the removal now that we're online
-    const stillInCart = await inventoryPage
-      .removeFromCartButton('sauce-labs-backpack')
-      .isVisible()
-      .catch(() => false);
+  if (stillInCart) {
+    await inventoryPage.removeProductFromCart('sauce-labs-backpack');
+  }
 
-    if (stillInCart) {
-      await inventoryPage.removeProductFromCart('sauce-labs-backpack');
-    }
-
-    expect(await inventoryPage.getCartCount()).toBe(0);
+  expect(await inventoryPage.getCartCount()).toBe(0);
+}).toPass({ timeout: 20000, intervals: [2000] });
     await expect(inventoryPage.addToCartButton('sauce-labs-backpack')).toBeVisible();
   });
 

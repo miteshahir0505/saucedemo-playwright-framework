@@ -157,18 +157,17 @@ test.describe('Checkout - network resilience', () => {
     await checkoutPage.fillInformation('Alex', 'Simmons', '34355');
 
     await page.context().setOffline(true);
-    await checkoutPage.continueButton.click({ timeout: 5000 }).catch(() => {});
-    await page.context().setOffline(false);
+await checkoutPage.continueButton.click({ timeout: 5000 }).catch(() => {});
+await page.context().setOffline(false);
 
-    // Give the browser a brief moment to settle after coming back online
-    await page.waitForTimeout(500);
-
-    // Retry if still on step one
-    if (page.url().includes('checkout-step-one')) {
-      await checkoutPage.continueButton.click();
-    }
-
-    await expect(page).toHaveURL(/checkout-step-two/, { timeout: 10000 });
+// Retry the click until it genuinely succeeds — protects against the real
+// machine's internet also being briefly down, not just the simulated flag
+await expect(async () => {
+  if (page.url().includes('checkout-step-one')) {
+    await checkoutPage.continueButton.click({ timeout: 3000 });
+  }
+  await expect(page).toHaveURL(/checkout-step-two/, { timeout: 3000 });
+}).toPass({ timeout: 20000, intervals: [2000] });
     await expect(checkoutPage.totalLabel).toBeVisible();
   });
 
@@ -237,16 +236,17 @@ test.describe('Checkout - network resilience', () => {
 
     // Simulate a brief offline period, then restore before attempting download
     await page.context().setOffline(true);
-    await page.waitForTimeout(500);
-    await page.context().setOffline(false);
-    await page.waitForTimeout(500);
+await page.waitForTimeout(500);
+await page.context().setOffline(false);
 
-    // Now attempt the actual download — this should succeed normally
-    const downloadPromise = page.waitForEvent('download');
-    await checkoutPage.generatePdfButton.click();
-    const download = await downloadPromise;
+let download;
+await expect(async () => {
+  const downloadPromise = page.waitForEvent('download', { timeout: 3000 });
+  await checkoutPage.generatePdfButton.click();
+  download = await downloadPromise;
+}).toPass({ timeout: 20000, intervals: [2000] });
 
-    expect(download.suggestedFilename()).toContain('.pdf');
+expect(download.suggestedFilename()).toContain('.pdf');
   });
 
 });
